@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/genesis-ssmp/genesis/proto/oracle.schema.json",
+  "title": "Cloud God Oracle",
+  "description": "Request/response schemas for the Cloud God Oracle escalation path, triggered on thrash detection.",
+  "definitions": {
+    "oracle_request": {
+      "type": "object",
+      "required": ["spec_blob_id", "metrics_summary", "symbol_shortlist"],
+      "properties": {
+        "spec_blob_id": {
+          "type": "string",
+          "description": "Blob ID of the original task specification."
+        },
+        "decision_ledger_blob_id": {
+          "type": "string",
+          "description": "Blob ID of the decision ledger slice (recent events)."
+        },
+        "failing_test_blob_id": {
+          "type": "string",
+          "description": "Blob ID of failing test output slice."
+        },
+        "symbol_shortlist": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of symbol names relevant to the thrashing mission."
+        },
+        "metrics_summary": {
+          "type": "object",
+          "description": "Mission metrics summary (MissionMetrics shape)."
+        }
+      },
+      "additionalProperties": false
+    },
+    "oracle_response": {
+      "type": "object",
+      "required": ["updated_dag", "leases_plan", "risk_hotspots", "recommended_tests"],
+      "properties": {
+        "updated_dag": {
+          "type": "object",
+          "description": "Replacement mission DAG (MissionDAG shape).",
+          "properties": {
+            "plan_id": { "type": "string" },
+            "task_desc": { "type": "string" },
+            "repo_path": { "type": "string" },
+            "nodes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "mission": { "type": "object" },
+                  "depends_on": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                }
+              }
+            },
+            "created_at": { "type": "string", "format": "date-time" }
+          },
+          "required": ["plan_id", "nodes"]
+        },
+        "leases_plan": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "scope_type": { "type": "string" },
+              "scope_value": { "type": "string" }
+            },
+            "required": ["scope_type", "scope_value"]
+          },
+          "description": "Updated leases plan for the new DAG."
+        },
+        "risk_hotspots": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "File paths or symbols identified as high-risk areas."
+        },
+        "recommended_tests": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Test selectors or commands the oracle recommends running."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

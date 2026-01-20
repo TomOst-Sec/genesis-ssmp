@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/genesis-ssmp/genesis/proto/edit_ir.schema.json",
+  "title": "Edit IR",
+  "description": "Intermediate representation for code modifications. Each operation is content-addressed for conflict detection.",
+  "type": "object",
+  "required": ["ops"],
+  "properties": {
+    "ops": {
+      "type": "array",
+      "description": "Ordered list of edit operations.",
+      "items": {
+        "$ref": "#/$defs/operation"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "operation": {
+      "type": "object",
+      "required": ["op", "path"],
+      "oneOf": [
+        { "$ref": "#/$defs/replace_span" },
+        { "$ref": "#/$defs/insert_after_symbol" },
+        { "$ref": "#/$defs/add_file" },
+        { "$ref": "#/$defs/delete_span" },
+        { "$ref": "#/$defs/insert_before_symbol" },
+        { "$ref": "#/$defs/delete_file" },
+        { "$ref": "#/$defs/replace_line" },
+        { "$ref": "#/$defs/insert_lines" },
+        { "$ref": "#/$defs/template" }
+      ]
+    },
+    "replace_span": {
+      "type": "object",
+      "required": ["op", "path", "anchor_hash", "lines", "content"],
+      "properties": {
+        "op": { "const": "replace_span" },
+        "path": { "type": "string", "description": "File path relative to repo root." },
+        "anchor_hash": { "type": "string", "description": "Content hash of the original span for conflict detection." },
+        "lines": {
+          "type": "array",
+          "items": { "type": "integer" },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "Start and end line numbers (inclusive) of the span to replace."
+        },
+        "content": { "type": "string", "description": "Replacement content." }
+      },
+      "additionalProperties": false
+    },
+    "insert_after_symbol": {
+      "type": "object",
+      "required": ["op", "path", "anchor_hash", "content"],
+      "properties": {
+        "op": { "const": "insert_after_symbol" },
+        "path": { "type": "string", "description": "File path relative to repo root." },
+        "anchor_hash": { "type": "string", "description": "Content hash of the anchor symbol for conflict detection." },
+        "symbol": { "type": "string", "description": "Symbol name to insert after." },
+        "content": { "type": "string", "description": "Content to insert." }
+      },
+      "additionalProperties": false
+    },
+    "add_file": {
+      "type": "object",
+      "required": ["op", "path", "anchor_hash", "content"],
+      "properties": {
+        "op": { "const": "add_file" },
+        "path": { "type": "string", "description": "File path relative to repo root." },
+        "anchor_hash": { "type": "string", "description": "Expected to be empty hash for new files." },
+        "content": { "type": "string", "description": "Full file content." }
+      },
+      "additionalProperties": false
+    },
+    "delete_span": {
+      "type": "object",
+      "required": ["op", "path", "anchor_hash", "lines"],
+      "properties": {
+        "op": { "const": "delete_span" },
+        "path": { "type": "string", "description": "File path relative to repo root." },
+        "anchor_hash": { "type": "string", "description": "Content hash of the span to delete for conflict detection." },
+        "lines": {
+          "type": "array",
+          "items": { "type": "integer" },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "Start and end line numbers (inclusive) of the span to delete."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

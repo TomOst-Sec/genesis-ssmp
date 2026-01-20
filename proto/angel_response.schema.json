@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/genesis-ssmp/genesis/proto/angel_response.schema.json",
+  "title": "Angel Response",
+  "description": "Structured output from an Angel after executing a mission. Contains either Edit IR operations or a diff fallback, plus a manifest of touched symbols and files.",
+  "type": "object",
+  "required": ["mission_id", "output_type", "manifest"],
+  "properties": {
+    "mission_id": {
+      "type": "string",
+      "description": "Mission ID this response fulfills."
+    },
+    "output_type": {
+      "type": "string",
+      "enum": ["edit_ir", "diff_fallback"],
+      "description": "Type of output: structured Edit IR or plaintext diff fallback."
+    },
+    "edit_ir": {
+      "type": "object",
+      "description": "Edit IR operations (required when output_type is edit_ir).",
+      "required": ["ops"],
+      "properties": {
+        "ops": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["op", "path", "anchor_hash"],
+            "properties": {
+              "op": { "type": "string", "enum": ["replace_span", "insert_after_symbol", "add_file", "delete_span"] },
+              "path": { "type": "string" },
+              "anchor_hash": { "type": "string" },
+              "lines": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2 },
+              "content": { "type": "string" },
+              "symbol": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "diff": {
+      "type": "string",
+      "description": "Plaintext unified diff (required when output_type is diff_fallback)."
+    },
+    "manifest": {
+      "type": "object",
+      "required": ["symbols_touched", "files_touched"],
+      "properties": {
+        "symbols_touched": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Symbol names modified or referenced by this response."
+        },
+        "files_touched": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "File paths modified by this response."
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

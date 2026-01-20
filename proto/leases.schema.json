@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/genesis-ssmp/genesis/proto/leases.schema.json",
+  "title": "Lease",
+  "description": "Grants an Angel exclusive or shared access to a symbol or module scope.",
+  "type": "object",
+  "required": ["lease_id", "owner_id", "mission_id", "scope_type", "scope_value", "issued_at", "expires_at"],
+  "properties": {
+    "lease_id": {
+      "type": "string",
+      "description": "Unique identifier for this lease."
+    },
+    "owner_id": {
+      "type": "string",
+      "description": "ID of the Angel holding this lease."
+    },
+    "mission_id": {
+      "type": "string",
+      "description": "Mission this lease is associated with."
+    },
+    "scope_type": {
+      "type": "string",
+      "enum": ["symbol", "module", "file", "directory"],
+      "description": "Type of scope this lease covers."
+    },
+    "scope_value": {
+      "type": "string",
+      "description": "The specific scope target (e.g. function name, module path, file path)."
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of lease issuance."
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of lease expiration."
+    }
+  },
+  "additionalProperties": false
+}

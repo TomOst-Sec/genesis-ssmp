@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/genesis-ssmp/genesis/proto/heaven_status.schema.json",
+  "title": "Heaven Status",
+  "description": "Response shape for the Heaven status endpoint.",
+  "type": "object",
+  "required": ["state_rev", "active_leases_count", "hotset_summary", "file_clock_summary"],
+  "properties": {
+    "state_rev": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Monotonically increasing state revision counter."
+    },
+    "active_leases_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of currently active leases."
+    },
+    "hotset_summary": {
+      "type": "object",
+      "description": "Summary of the current hot set (frequently accessed shards).",
+      "additionalProperties": true
+    },
+    "file_clock_summary": {
+      "type": "object",
+      "description": "Summary of file clock vectors for conflict detection.",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

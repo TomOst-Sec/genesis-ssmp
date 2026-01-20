@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/genesis-ssmp/genesis/proto/pf.schema.json",
+  "title": "Page Fault Protocol",
+  "description": "Request/response protocol for Angels to fetch context shards from Heaven. Supports batching (multiple shards per response) and prefetch (automatic inclusion of related shards).",
+  "type": "object",
+  "oneOf": [
+    { "$ref": "#/$defs/request" },
+    { "$ref": "#/$defs/response" }
+  ],
+  "$defs": {
+    "request": {
+      "type": "object",
+      "required": ["type", "command", "args"],
+      "properties": {
+        "type": { "const": "request" },
+        "command": {
+          "type": "string",
+          "enum": ["PF_STATUS", "PF_SYMDEF", "PF_CALLERS", "PF_SLICE", "PF_SEARCH", "PF_TESTS", "PF_PROMPT_SECTION", "PF_PROMPT_SEARCH", "PF_PROMPT_SUMMARY"],
+          "description": "PF command to execute."
+        },
+        "args": {
+          "type": "object",
+          "description": "Command-specific arguments.",
+          "properties": {
+            "mission_id": { "type": "string", "description": "Mission context for metrics tracking." },
+            "symbol": { "type": "string", "description": "Symbol name (for SYMDEF, CALLERS, TESTS)." },
+            "path": { "type": "string", "description": "File path (for SLICE)." },
+            "start_line": { "type": "integer", "description": "Start line (for SLICE)." },
+            "n": { "type": "integer", "description": "Number of lines (for SLICE) or results (for CALLERS, SEARCH, TESTS)." },
+            "query": { "type": "string", "description": "Search query (for SEARCH)." },
+            "top_k": { "type": "integer", "description": "Max results to return." },
+            "prompt_id": { "type": "string", "description": "Prompt artifact ID (for PROMPT_SECTION, PROMPT_SEARCH, PROMPT_SUMMARY)." },
+            "section_index": { "type": "integer", "description": "Section index (for PROMPT_SECTION)." }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "response": {
+      "type": "object",
+      "required": ["type", "shards", "meta"],
+      "properties": {
+        "type": { "const": "response" },
+        "shards": {
+          "type": "array",
+          "description": "Content-addressed shards returned by Heaven. May contain multiple shards due to batching/prefetch.",
+          "items": {
+            "$ref": "#/$defs/shard"
+          }
+        },
+        "meta": {
+          "type": "object",
+          "required": ["pf_count", "shard_bytes"],
+          "properties": {
+            "pf_count": { "type": "integer", "description": "Total PF calls for this mission so far." },
+            "shard_bytes": { "type": "integer", "description": "Total shard bytes served for this mission so far." },
+            "prefetched": { "type": "boolean", "description": "Whether prefetch shards were included." }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "shard": {
+      "type": "object",
+      "required": ["kind", "blob_id", "meta"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["symdef", "callers", "tests", "slice", "search", "status", "prompt_section", "prompt_search", "prompt_summary"],
+          "description": "Type of shard content."
+        },
+        "blob_id": {
+          "type": "string",
+          "description": "Content-addressed blob ID in Heaven's blob store."
+        },
+        "meta": {
+          "type": "object",
+          "description": "Shard-specific metadata (symbol name, path, query, etc.).",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
