@@ -1,0 +1,54 @@
+# Compiled binaries
+/genesis
+/genesis-cli
+/cli/genesis
+/cli/genesis-cli
+*.test
+
+# Benchmark binaries
+/bench/harness/proxy/proxy
+
+# Build artifacts
+/build/
+*.o
+*.so
+
+# SQLite
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Genesis runtime
+.genesis/
+
+# IDE
+.vscode/
+.idea/
+.cursor/
+*.swp
+*.swo
+*~
+
+# Claude Code
+.claude/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.*
+
+# Crash logs
+opencode-panic-*.log
+
+# Test artifacts
+/tmp/
+/fixtures/tmp/
