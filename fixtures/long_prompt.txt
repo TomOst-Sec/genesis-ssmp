@@ -1,0 +1,187 @@
+# Spec
+
+You are building a multi-tenant REST API for a task management platform called TaskFlow.
+The platform supports workspaces, projects, tasks, and users with role-based access control.
+The backend is written in Go using the standard library's net/http package with a PostgreSQL database.
+All endpoints must return JSON responses and use proper HTTP status codes.
+The API follows RESTful conventions with versioned endpoints under /api/v1/.
+
+Key entities:
+- Workspace: top-level organization unit, has many projects
+- Project: belongs to a workspace, has many tasks
+- Task: belongs to a project, has assignee, status, priority, due date
+- User: can belong to multiple workspaces with different roles
+
+The system must support pagination, filtering, and sorting on all list endpoints.
+Rate limiting is enforced at 100 requests/minute per API key.
+All mutations must be idempotent and support optimistic concurrency via ETag headers.
+
+The architecture follows a layered pattern:
+- Handler layer: HTTP routing, request parsing, response formatting
+- Service layer: business logic, authorization checks, validation
+- Repository layer: database queries, transaction management
+- Domain layer: entity definitions, value objects, domain events
+
+## Constraints
+
+1. All database queries MUST use parameterized statements — no string concatenation in SQL.
+2. Every mutation endpoint MUST validate the ETag header for optimistic concurrency control.
+3. Task status transitions MUST follow the state machine: draft -> active -> in_review -> done | archived.
+4. Users MUST NOT access resources outside their workspace scope.
+5. API responses MUST NOT leak internal IDs — use UUIDs in all external interfaces.
+6. Batch operations MUST be atomic — either all succeed or all fail within a transaction.
+7. File uploads MUST be limited to 10MB and only accept PNG, JPEG, PDF, and DOCX.
+8. Pagination MUST use cursor-based pagination, not offset-based, for consistency.
+9. All timestamps MUST be in RFC3339 format with UTC timezone.
+10. Error responses MUST follow the RFC 7807 Problem Details format.
+11. NEVER store plain-text passwords — use bcrypt with cost factor >= 12.
+12. All list endpoints MUST have a maximum page size of 100 items.
+
+## API Contracts
+
+### Workspaces
+
+```
+GET    /api/v1/workspaces                    — List workspaces (paginated)
+POST   /api/v1/workspaces                    — Create workspace
+GET    /api/v1/workspaces/{id}               — Get workspace by ID
+PUT    /api/v1/workspaces/{id}               — Update workspace
+DELETE /api/v1/workspaces/{id}               — Archive workspace (soft delete)
+```
+
+### Projects
+
+```
+GET    /api/v1/workspaces/{wid}/projects              — List projects
+POST   /api/v1/workspaces/{wid}/projects              — Create project
+GET    /api/v1/workspaces/{wid}/projects/{pid}         — Get project
+PUT    /api/v1/workspaces/{wid}/projects/{pid}         — Update project
+DELETE /api/v1/workspaces/{wid}/projects/{pid}         — Archive project
+```
+
+### Tasks
+
+```
+GET    /api/v1/projects/{pid}/tasks                    — List tasks (with filters)
+POST   /api/v1/projects/{pid}/tasks                    — Create task
+GET    /api/v1/projects/{pid}/tasks/{tid}              — Get task
+PUT    /api/v1/projects/{pid}/tasks/{tid}              — Update task
+PATCH  /api/v1/projects/{pid}/tasks/{tid}/status       — Transition task status
+DELETE /api/v1/projects/{pid}/tasks/{tid}              — Archive task
+POST   /api/v1/projects/{pid}/tasks/batch              — Batch create tasks
+```
+
+### Request/Response Schemas
+
+```json
+{
+  "task": {
+    "id": "uuid",
+    "title": "string (required, 1-200 chars)",
+    "description": "string (optional, max 10000 chars)",
+    "status": "draft|active|in_review|done|archived",
+    "priority": "low|medium|high|critical",
+    "assignee_id": "uuid (optional)",
+    "due_date": "RFC3339 (optional)",
+    "tags": ["string"],
+    "created_at": "RFC3339",
+    "updated_at": "RFC3339",
+    "etag": "string"
+  }
+}
+```
+
+## Examples
+
+### Create a task
+
+```bash
+curl -X POST /api/v1/projects/p123/tasks \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token>" \
+  -d '{
+    "title": "Implement user authentication",
+    "description": "Add JWT-based auth with refresh tokens",
+    "priority": "high",
+    "assignee_id": "u456",
+    "due_date": "2025-03-01T00:00:00Z",
+    "tags": ["auth", "security"]
+  }'
+```
+
+### Transition task status
+
+```bash
+curl -X PATCH /api/v1/projects/p123/tasks/t789/status \
+  -H "Content-Type: application/json" \
+  -H "If-Match: \"v3\"" \
+  -d '{"status": "in_review"}'
+```
+
+### List tasks with filters
+
+```bash
+curl "/api/v1/projects/p123/tasks?status=active&priority=high&assignee=u456&cursor=abc&limit=20"
+```
+
+### Error response (RFC 7807)
+
+```json
+{
+  "type": "https://taskflow.io/errors/invalid-transition",
+  "title": "Invalid Status Transition",
+  "status": 422,
+  "detail": "Cannot transition from 'draft' to 'done'. Must go through 'active' first.",
+  "instance": "/api/v1/projects/p123/tasks/t789/status"
+}
+```
+
+## Acceptance Criteria
+
+- All CRUD endpoints return correct HTTP status codes (201 for create, 200 for update, 204 for delete).
+- Task status transitions enforce the state machine — invalid transitions return 422.
+- Concurrent updates with stale ETags return 412 Precondition Failed.
+- Unauthorized cross-workspace access returns 403 Forbidden.
+- Pagination cursors are stable across concurrent mutations.
+- Batch task creation is atomic — partial failures roll back all operations.
+- Rate-limited requests return 429 with Retry-After header.
+- All list endpoints respect the 100-item maximum page size.
+- Input validation errors return 400 with detailed field-level error messages.
+
+## Security
+
+Authentication uses JWT tokens with RS256 signing. Tokens expire after 1 hour.
+Refresh tokens are stored in HttpOnly secure cookies with 7-day expiry.
+API keys are scoped to specific workspaces and can be revoked by workspace admins.
+All endpoints require authentication except POST /api/v1/auth/login and POST /api/v1/auth/register.
+Role-based access control supports three roles: viewer, editor, admin.
+Viewers can read but not modify resources. Editors can create and update. Admins can delete and manage users.
+Cross-origin requests are restricted to whitelisted domains via CORS headers.
+Request bodies are validated against JSON Schema before processing.
+SQL injection is prevented by using parameterized queries exclusively.
+XSS is mitigated by encoding all user-supplied strings in JSON responses.
+
+## Style Guide
+
+- Function names use camelCase for exported and unexported Go identifiers.
+- HTTP handlers follow the pattern: parseRequest -> validateInput -> callService -> writeResponse.
+- Error handling uses sentinel errors and error wrapping with fmt.Errorf and %w verb.
+- Database transactions use a context-scoped pattern with defer tx.Rollback().
+- Test files are colocated with source files using the _test.go suffix.
+- Table-driven tests are preferred for functions with multiple input/output cases.
+- Comments follow godoc conventions — exported functions must have doc comments.
+- Magic numbers are replaced with named constants.
+- Log messages use structured logging with key-value pairs (slog package).
+
+## Glossary
+
+- Workspace: A top-level organizational boundary. All resources belong to exactly one workspace.
+- Project: A collection of related tasks within a workspace. Projects have a name, description, and status.
+- Task: The atomic unit of work. Has a title, description, status, priority, assignee, and due date.
+- ETag: An entity tag used for optimistic concurrency control. Prevents lost updates in concurrent edits.
+- Cursor: An opaque pagination token that points to a specific position in a result set.
+- State Machine: The defined set of valid status transitions for a task lifecycle.
+- Rate Limit: The maximum number of API requests allowed per time window per API key.
+- RBAC: Role-Based Access Control. Users have roles (viewer/editor/admin) scoped to workspaces.
+- RFC 7807: The standard format for HTTP API error responses (Problem Details).
+- Idempotent: An operation that produces the same result regardless of how many times it's executed.

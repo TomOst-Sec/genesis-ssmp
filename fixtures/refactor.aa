@@ -1,0 +1,9 @@
+# Refactor the Greet function to accept a Person struct
+BASE_REV abc123
+LEASE symbol:Greet file:main.go
+NEED symdef Greet
+NEED callers Greet 10
+NEED slice main.go 10 20
+DO Refactor the Greet function to accept a Person struct
+DO Update all callers of Greet to pass Person
+RETURN edit_ir

@@ -1,0 +1,6 @@
+{
+  "name": "ir-small-repo-ts",
+  "version": "0.1.0",
+  "description": "Minimal TypeScript fixture for Genesis IR testing",
+  "private": true
+}

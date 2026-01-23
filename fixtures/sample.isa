@@ -1,0 +1,33 @@
+ISA_VERSION 0
+BASE_REV abc123
+
+# Context retrieval
+NEED symdef HandleCreate
+NEED callers HandleCreate
+NEED slice handler.go 10 30
+NEED test TestHandleCreate
+
+# Mode and budget
+MODE SOLO
+BUDGET 6000
+PROMPT_REF sha256-deadbeef
+
+# Invariants
+INVARIANT "All mutations must validate ETag"
+INVARIANT "No string concatenation in SQL"
+
+# Operations
+OP Add ETag validation to HandleCreate
+OP Insert parameterized query for task insert
+
+# Verification
+RUN test ./handler/...
+RUN lint
+ASSERT tests ./handler/...
+
+# Error handling
+IF_FAIL RETRY 2
+IF_FAIL ESCALATE
+
+LABEL checkpoint-1
+HALT

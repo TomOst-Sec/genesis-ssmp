@@ -1,0 +1,9 @@
+# Fix nil pointer dereference in ParseConfig
+BASE_REV def456
+LEASE symbol:ParseConfig file:config.go
+NEED symdef ParseConfig
+NEED slice config.go 25 15
+DO Fix nil pointer dereference when config file is missing
+DO Add nil guard before accessing config.Database
+ASSERT tests TestParseConfig
+RETURN edit_ir
