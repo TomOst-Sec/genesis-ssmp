@@ -1,0 +1,15 @@
+Rewrite tinygrep's documentation completely:
+
+1) Rewrite README.md with:
+   - Clear project description and purpose
+   - Installation instructions (pip install, from source)
+   - Usage examples with real command-line invocations
+   - Full regex syntax reference table
+   - Comparison with grep (what's supported, what's not)
+   - Contributing guidelines section
+
+2) Add inline docstrings to every public function in src/tinygrep/cli.py that doesn't already have one
+
+3) Create a CHANGELOG.md documenting the current feature set as v0.1.0
+
+Do NOT change any functional code — documentation only.

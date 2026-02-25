@@ -1,0 +1,14 @@
+Add support for the * (zero-or-more) quantifier to tinygrep's regex engine. This requires:
+
+1) Update the regex parser to recognize * as a quantifier token (in src/tinygrep/cli.py)
+2) Implement the * quantifier in the matching engine (greedy by default) — follow the same
+   pattern used by + and ? in the gen() function
+3) Add a test file tests/test_star.py with unit tests for * including edge cases:
+   - a* matching empty string
+   - a* matching "aaa"
+   - .* matching any string
+   - [abc]* with character classes
+   - (foo)* group repetition
+4) Update the README.md to document the new * quantifier in the regex features section
+
+Run the tests to verify everything passes.

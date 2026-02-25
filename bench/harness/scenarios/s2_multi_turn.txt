@@ -1,0 +1,5 @@
+Turn 1: Add support for the {n} exact repetition quantifier to tinygrep's regex engine. Update the parser, implement in gen(), add tests in tests/test_repeat.py, and update the README.
+
+Turn 2: Now extend {n} to support {n,m} range repetition (e.g. a{2,4} matches 2-4 a's). Add edge cases for {0,n}, {n,}, and {0,0}. Update tests and README.
+
+Turn 3: Add support for lazy quantifiers: *?, +?, and ??. These should match the minimum number of characters instead of maximum. Add comprehensive tests comparing greedy vs lazy behavior.

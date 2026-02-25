@@ -1,0 +1,11 @@
+Generate a comprehensive test suite for tinygrep's existing regex engine. Do NOT modify any source code — only create test files.
+
+Create the following test files:
+1) tests/test_quantifiers.py — tests for + and ? quantifiers with atoms, groups, character classes
+2) tests/test_anchors.py — tests for ^ and $ anchors, including combined patterns
+3) tests/test_groups.py — tests for capture groups, nested groups, alternation (|)
+4) tests/test_character_classes.py — tests for [abc], [^abc], ., \d, \w, \s escapes
+5) tests/test_edge_cases.py — empty patterns, empty input, very long input, overlapping matches
+
+Each test file should have at least 10 test functions with descriptive names and docstrings.
+Run all tests to verify they pass against the existing implementation.

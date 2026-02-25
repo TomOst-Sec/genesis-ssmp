@@ -1,0 +1,7 @@
+Fix the bug where tinygrep's character class matching [abc] fails when the input string contains characters with multi-byte UTF-8 encodings (e.g. accented characters like é, ñ). The character class should correctly match only ASCII characters and skip multi-byte characters without crashing.
+
+Add regression tests in tests/test_unicode.py covering:
+- [a-z] with accented characters in input
+- [abc] with mixed ASCII and non-ASCII
+- Negated character classes [^abc] with unicode input
+- Dot (.) matching single unicode characters

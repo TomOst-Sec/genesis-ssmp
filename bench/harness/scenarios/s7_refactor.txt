@@ -1,0 +1,16 @@
+Refactor tinygrep's regex engine for maintainability:
+
+1) Extract the gen() function's pattern matching into a Pattern class hierarchy:
+   - LiteralPattern, DotPattern, CharClassPattern, GroupPattern, AnchorPattern
+   - Each pattern class has a match(string, position) method
+   - Quantifiers become wrappers: QuantifiedPattern(inner, min, max, greedy)
+
+2) Extract the CLI argument parsing into a separate module src/tinygrep/args.py
+
+3) Move the regex compilation (parser) into src/tinygrep/parser.py
+
+4) Keep src/tinygrep/cli.py as the entry point that wires everything together
+
+5) Ensure all existing tests still pass after refactoring
+
+6) Update imports and __init__.py as needed

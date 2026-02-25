@@ -1,0 +1,8 @@
+Add a --count (-c) flag to tinygrep that prints only the number of matching lines per file instead of the matching lines themselves. When used with multiple files, print "filename:count" for each file.
+
+Requirements:
+1) Add the -c/--count argument to the CLI argument parser
+2) Implement count mode in the main search loop
+3) Format output as "count" for single file, "filename:count" for multiple files
+4) Add tests in tests/test_count.py covering single file, multiple files, zero matches, and combination with other flags
+5) Update README.md to document the new flag
