@@ -9,6 +9,8 @@ Genesis inverts this. **All agent memory is externalized into a content-addresse
 
 This is an operating system for agent swarms, not a framework.
 
+**Status:** This is an architectural concept and research prototype exploring whether externalized shared-state memory can achieve ~20% token reduction in multi-agent coding workflows. The core subsystems (Heaven, God, proto contracts) are implemented and tested. The token reduction hypothesis needs further development and validation against production workloads — the current benchmarks are single-task on small repos. Real-world savings at scale remain to be proven.
+
 ## Architecture
 
 ```mermaid
@@ -515,9 +517,9 @@ Tested on tinygrep (411-line Python grep) — "Improve this project. Add tests, 
 | Tests passing | 160 | 113 | **+42%** |
 | Test lines | 897 | 597 | **+50%** |
 
-Architecture benchmarks confirm 5x–77x token savings depending on codebase size and task complexity. The PF lazy-loading model pays off more as repo size grows.
+Early benchmarks suggest the lazy-loading PF model can reduce token usage significantly on small tasks. The 20% reduction target for production multi-agent workflows is a design goal — not yet validated at scale. The architecture is built to enable this, but real-world performance across diverse codebases and task complexities needs further testing.
 
-See [BENCHMARK_RESULTS.md](./BENCHMARK_RESULTS.md) for detailed results and methodology.
+See [BENCHMARK_RESULTS.md](./BENCHMARK_RESULTS.md) for current benchmark data and methodology.
 
 ## Current Status
 
@@ -538,6 +540,8 @@ See [BENCHMARK_RESULTS.md](./BENCHMARK_RESULTS.md) for detailed results and meth
 | Benchmark Harness (7 scenarios, proxy) | ✅ Complete | 10 pass |
 | Runtime JSON Schema Validation | 📋 Planned | — |
 | PF_TESTS (full test discovery) | 🚧 Stubbed | — |
+| 20% Token Reduction Validation | 📋 Needs testing | — |
+| Production Workload Benchmarks | 📋 Planned | — |
 
 ## Documentation
 
